@@ -11,9 +11,21 @@ class ApiProvider {
 
   Future<PageDataListModel> fetchPageData(
       String fromDate, String toDate, int startpg, int endPg) async {
+    print(baseUrl +
+        "pagenumber=" +
+        startpg.toString() +
+        "&pagesize=" +
+        endPg.toString() +
+        "&fromdate=" +
+        fromDate +
+        "&todate=" +
+        toDate +
+        "&compid=1");
     final response = await http.Client().get(
         baseUrl + "fromdate=" + fromDate + "&todate=" + toDate + "&compid=1");
+    print(response.statusCode);
     if (response.statusCode != successCode) {
+      print("error occured");
       throw Exception();
     }
     return parsedJson(response.body);

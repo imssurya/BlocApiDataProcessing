@@ -27,6 +27,7 @@ dependencies:
   http: ^0.12.2
   equatable:
   flutter_pagewise: ^1.2.3
+  swipedetector: ^1.2.0
 
 
   # The following adds the Cupertino Icons font to your application.

@@ -15,13 +15,41 @@ class PageDataBloc extends Bloc<PageDataBlocEvent, PageDataBlocState> {
   @override
   Stream<PageDataBlocState> mapEventToState(PageDataBlocEvent event) async* {
     if (event is FetchPageDataEvent) {
+      //PageDataListModel dataAPI;
       yield PageDataIsLoading();
+      //PageDataListModel dataAPI;
       try {
         final PageDataListModel pageDataListModel =
             await _repositoryDataProvider.fetchPageDataFromAPI(event.fromDate,
                 event.toDate, event.startingPgNo, event.endingPgNo);
         print(pageDataListModel.pageDataList.length);
         yield PageDataLoaded(pageDataListModel: pageDataListModel);
+
+        // tried below code to get lazy loading
+        // try {
+        //   if (event.endingPgNo <= 10) {
+        //     dataAPI = await _repositoryDataProvider.fetchPageDataFromAPI(
+        //         event.fromDate,
+        //         event.toDate,
+        //         event.startingPgNo,
+        //         event.endingPgNo);
+        //     yield PageDataLoaded(pageDataListModel: dataAPI);
+        //   } else if (event.endingPgNo > 10) {
+        //     // final PageDataListModel pageDataListModel =
+        //     //     await _repositoryDataProvider.fetchPageDataFromAPI(event.fromDate,
+        //     //         event.toDate, event.startingPgNo, event.endingPgNo);
+
+        //     dataAPI = await _repositoryDataProvider.fetchPageDataFromAPI(
+        //         event.fromDate,
+        //         event.toDate,
+        //         event.startingPgNo,
+        //         event.endingPgNo);
+        //     PageDataListModel s = dataAPI.pageDataList
+        //         .sublist(event.endingPgNo, 20) as PageDataListModel;
+
+        //     print(s.pageDataList.length);
+        //     yield PageDataLoaded(pageDataListModel: s);
+        //   }
       } catch (e) {
         yield PageDataNotLoaded();
       }

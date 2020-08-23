@@ -8,6 +8,7 @@ import 'package:pagelistdata/bloc/pageDataBlocState.dart';
 import 'package:pagelistdata/model/suninfotech_page_model.dart';
 import 'package:pagelistdata/ui/initial_page_load.dart';
 import 'package:pagelistdata/ui/loading_widget.dart';
+import 'package:pagelistdata/utilities/size_config.dart';
 
 import 'expansion_tile.dart';
 
@@ -20,10 +21,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   PageDataBloc _pageDataBloc;
+  int listItemController = 1;
   final _pageController = PageController(initialPage: 0);
   var _textField1Controller = TextEditingController();
   var _textField2Controller = TextEditingController();
   var _pgNoController = TextEditingController();
+  bool initialPageLoad = true;
+  bool txt1 = false;
+  bool txt2 = false;
   @override
   void initState() {
     _pageDataBloc = BlocProvider.of<PageDataBloc>(context);
@@ -40,34 +45,70 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text('SunTechInfo'),
       ),
-      body: BlocBuilder<PageDataBloc, PageDataBlocState>(
-        builder: (context, state) {
-          if (state is PageDataNotSearch) {
-            return mainPage(initialPageLoad: true);
-          } else if (state is PageDataIsLoading) {
-            return LodingWidget(context: context);
-          } else if (state is PageDataLoaded) {
-            //print(state.props.length);
-            final List<PageDataModel> data =
-                state.pageDataListModel.pageDataList;
-            // data.forEach((element) {
-            //   print(element.color);
-            // });
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return OrientationBuilder(
+                builder: (context, orientation) {
+                  SizeConfig().init(constraints, orientation);
+                  return BlocBuilder<PageDataBloc, PageDataBlocState>(
+                    builder: (context, state) {
+                      print("textMultiplier " +
+                          SizeConfig.textMultiplier.toString());
+                      print("imageSizeMultiplier " +
+                          SizeConfig.textMultiplier.toString());
+                      print("heightMultiplier " +
+                          SizeConfig.textMultiplier.toString());
+                      print("widthMultiplier " +
+                          SizeConfig.textMultiplier.toString());
 
-            return mainPage(
-              initialPageLoad: false,
-              data: data,
-            );
-          } else {
-            print(state);
-            return Text('Something Wrong dood');
-          }
-        },
+                      if (state is PageDataNotSearch) {
+                        return mainPage(
+                            initialPageLoad: initialPageLoad, context: context);
+                      } else if (state is PageDataIsLoading) {
+                        return LodingWidget(context: context);
+                      } else if (state is PageDataLoaded) {
+                        final List<PageDataModel> data =
+                            state.pageDataListModel.pageDataList;
+                        // setState(() {
+                        //   return mainPage(
+                        //     initialPageLoad: false,
+                        //     data: data,
+                        //   );
+                        // });
+
+                        initialPageLoad = false;
+
+                        return mainPage(
+                            initialPageLoad: initialPageLoad,
+                            data: data,
+                            context: context);
+                      } else {
+                        print(state);
+                        return Container(
+                            alignment: Alignment.center,
+                            child: Center(
+                                child: Text(
+                                    'Something Went Wrong Please Rerun Application')));
+                      }
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
       ),
     );
   }
 
-  Widget mainPage({@required bool initialPageLoad, List<PageDataModel> data}) {
+  Widget mainPage(
+      {@required bool initialPageLoad,
+      List<PageDataModel> data,
+      @required BuildContext context}) {
     return SafeArea(
       child: Container(
         width: MediaQuery.of(context).size.width,
@@ -77,14 +118,14 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
-              height: 5.0,
+              height: SizeConfig.heightMultiplier,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: 5.0,
+                  width: SizeConfig.widthMultiplier,
                 ),
                 Flexible(
                   child: TextField(
@@ -92,12 +133,17 @@ class _HomePageState extends State<HomePage> {
                     showCursor: true,
                     controller: _textField1Controller,
                     keyboardType: TextInputType.datetime,
+                    style: TextStyle(
+                        fontSize: SizeConfig.isPortrait
+                            ? SizeConfig.textMultiplier * 3
+                            : SizeConfig.textMultiplier * 3),
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: BorderSide(
                           color: Colors.red, //this has no effect
                         ),
-                        borderRadius: BorderRadius.circular(15.0),
+                        borderRadius: BorderRadius.circular(
+                            SizeConfig.widthMultiplier * 3),
                       ),
                       hintText: 'From date',
                     ),
@@ -105,11 +151,12 @@ class _HomePageState extends State<HomePage> {
                       final DateTime date = await selectDate(context);
                       _textField1Controller.text =
                           date.toString().substring(0, 10);
+                      txt1 = true;
                     },
                   ),
                 ),
                 SizedBox(
-                  width: 10.0,
+                  width: SizeConfig.widthMultiplier * 2,
                 ),
                 // Padding(
                 //   padding: EdgeInsets.all(10.0),
@@ -120,12 +167,14 @@ class _HomePageState extends State<HomePage> {
                     showCursor: true,
                     controller: _textField2Controller,
                     keyboardType: TextInputType.datetime,
+                    style: TextStyle(fontSize: SizeConfig.textMultiplier * 3),
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderSide: BorderSide(
                           color: Colors.red, //this has no effect
                         ),
-                        borderRadius: BorderRadius.circular(15.0),
+                        borderRadius: BorderRadius.circular(
+                            SizeConfig.widthMultiplier * 3),
                       ),
                       hintText: 'To date',
                     ),
@@ -133,54 +182,63 @@ class _HomePageState extends State<HomePage> {
                       final DateTime date = await selectDate(context);
                       _textField2Controller.text =
                           date.toString().substring(0, 10);
-                      // setState(() {
-                      //   _textField2Controller.text =
-                      //       date.toString().substring(0, 10);
-                      // });
+                      txt2 = true;
                     },
                   ),
                 ),
                 SizedBox(
-                  width: 10.0,
+                  width: SizeConfig.widthMultiplier * 2,
                 ),
               ],
             ),
             SizedBox(
-              height: 12,
+              height: SizeConfig.heightMultiplier * 2,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: 10.0,
+                  width: SizeConfig.widthMultiplier * 2,
                 ),
                 Expanded(
                   flex: 6,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 8),
                     child: SizedBox(
-                      height: 45,
+                      height: SizeConfig.heightMultiplier * 8,
                       child: RaisedButton(
                         color: Colors.red[100],
                         shape: StadiumBorder(),
                         onPressed: () {
-                          _pageDataBloc.add(FetchPageDataEvent(
-                              _textField1Controller.text,
-                              _textField2Controller.text,
-                              1,
-                              10));
+                          if (txt1 == true &&
+                              txt2 == true &&
+                              _textField1Controller.text !=
+                                  _textField2Controller.text) {
+                            _pageDataBloc.add(FetchPageDataEvent(
+                                _textField1Controller.text,
+                                _textField2Controller.text,
+                                1,
+                                10));
+                          } else {
+                            Scaffold.of(context).showSnackBar(SnackBar(
+                              content:
+                                  Text("Please enter From Date and To Date!"),
+                            ));
+                          }
                         },
                         child: Text(
                           "Generate Report",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: SizeConfig.textMultiplier * 3),
                         ),
                       ),
                     ),
                   ),
                 ),
                 SizedBox(
-                  width: 5.0,
+                  width: SizeConfig.widthMultiplier,
                 ),
                 Flexible(
                   flex: 3,
@@ -189,6 +247,7 @@ class _HomePageState extends State<HomePage> {
                     textAlign: TextAlign.center,
                     controller: _pgNoController,
                     keyboardType: TextInputType.number,
+                    style: TextStyle(fontSize: SizeConfig.textMultiplier * 3),
                     onTap: () {
                       setState(() {
                         _pgNoController.text = "";
@@ -199,21 +258,22 @@ class _HomePageState extends State<HomePage> {
                         borderSide: BorderSide(
                           color: Colors.red, //this has no effect
                         ),
-                        borderRadius: BorderRadius.circular(50.0),
+                        borderRadius: BorderRadius.circular(
+                            SizeConfig.widthMultiplier * 9),
                       ),
                       hintText: 'Pg No',
                     ),
                   ),
                 ),
                 SizedBox(
-                  width: 5.0,
+                  width: SizeConfig.widthMultiplier * 1,
                 ),
                 Flexible(
                   flex: 3,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 8),
                     child: SizedBox(
-                      height: 45,
+                      height: SizeConfig.heightMultiplier * 8,
                       child: RaisedButton(
                         shape: StadiumBorder(),
                         color: Colors.red[100],
@@ -223,20 +283,22 @@ class _HomePageState extends State<HomePage> {
                         },
                         child: Text(
                           "Go",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: SizeConfig.textMultiplier * 3),
                         ),
                       ),
                     ),
                   ),
                 ),
                 SizedBox(
-                  width: 10.0,
+                  width: SizeConfig.widthMultiplier * 2,
                 ),
               ],
             ),
             initialPageLoad ? InitialPageLoad() : buildPageView(context, data),
             SizedBox(
-              height: 5.0,
+              height: SizeConfig.heightMultiplier * 1,
             ),
           ],
         ),
@@ -245,45 +307,47 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget buildPageView(BuildContext context, List<PageDataModel> data) {
-    return Expanded(
-      flex: 1,
-      child: PageView.builder(
-        pageSnapping: true,
-        itemBuilder: (BuildContext context, int index) {
-          var multiplier = 0;
-          var limit = data.length / 10 <= 1
-              ? 1
-              : int.parse((data.length / 10).ceil().toString());
-          multiplier = index == 0 ? 1 : index;
-          var buildData = index;
-          return ListView.builder(
-            itemCount: limit - 1 == index ? data.length % 10 : 10,
-            itemBuilder: (context, gridIndex) {
-              return BuildListTileExpansion(
-                  data: data,
-                  index: buildData == 0
-                      ? gridIndex
-                      : gridIndex + (10 * multiplier) <= data.length
-                          ? gridIndex + 10 * multiplier
-                          : data.length);
-            },
-          );
-        },
-        itemCount: data.length / 10 <= 1
-            ? 1
-            : int.parse((data.length / 10).ceil().toString()),
-        controller: (_pageController),
-        onPageChanged: (num) {
-          setState(() {
-            int a = data.length / 10 <= 1
+    return Container(
+      child: Expanded(
+        child: PageView.builder(
+          pageSnapping: true,
+          itemBuilder: (context, int index) {
+            var multiplier = 0;
+            var limit = data.length / 10 <= 1
                 ? 1
                 : int.parse((data.length / 10).ceil().toString());
-            _pgNoController.text = (num + 1).toString() + "/" + a.toString();
-            //  _pageDataBloc.add(FetchPageDataEvent(
-            //     _textField1Controller.text, _textField2Controller.text, 1, 10));
-          });
-          print(num);
-        },
+            multiplier = index == 0 ? 1 : index;
+            var buildData = index;
+            return ListView.builder(
+              itemCount: limit - 1 == index
+                  ? data.length % 10 == 0 ? 10 : data.length % 10
+                  : 10,
+              itemBuilder: (context, gridIndex) {
+                return BuildListTileExpansion(
+                    data: data,
+                    index: buildData == 0
+                        ? gridIndex
+                        : gridIndex + (10 * multiplier) <= data.length
+                            ? gridIndex + 10 * multiplier
+                            : data.length);
+              },
+            );
+          },
+          itemCount: data.length / 10 <= 1
+              ? 1
+              : int.parse((data.length / 10).ceil().toString()),
+          controller: (_pageController),
+          onPageChanged: (num) {
+            //listItemController++;
+            setState(() {
+              int a = data.length / 10 <= 1
+                  ? 1
+                  : int.parse((data.length / 10).ceil().toString());
+              _pgNoController.text = (num + 1).toString() + "/" + a.toString();
+            });
+            print(num);
+          },
+        ),
       ),
     );
   }

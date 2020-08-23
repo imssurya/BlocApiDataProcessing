@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pagelistdata/utilities/size_config.dart';
 
 class InitialPageLoad extends StatelessWidget {
   const InitialPageLoad({
@@ -19,7 +20,9 @@ class InitialPageLoad extends StatelessWidget {
           Center(
             child: Text(
               'Please select From date and \nTo Date to generate report!',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
+              style: TextStyle(
+                  fontSize: SizeConfig.textMultiplier * 4,
+                  fontWeight: FontWeight.normal),
             ),
           ),
         ],
